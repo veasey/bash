@@ -6,8 +6,9 @@ sudo apt-get --yes --force-yes install openssl > /dev/null
 
 ip=173.194.34.132                   # google.com
 essid=BTOpenzone
+attempts=1
 
-ConnectifyMe(){
+ConnectifyMe() {
   # 3 Pings, push POST request if 100% loss of connectivity.	
   if ping -c 3 $ip | grep '100% packet loss\|Network is unreachable' ; then    
 	echo "$(date "+%Y-%m-%d %H:%M:%S:") Connection down"
@@ -41,8 +42,17 @@ ConnectifyMe(){
 DecryptCheck() {
   if [ $? -ne 0 ] ; then
 	rm -f .userdata.dat
+	clear
 	echo "Incorrect Password! Please try again!"
-	sleep 3
+	echo "Attempt: $attempts"
+	sleep 2
+	((attempts++))
+	if [ $attempts == 3 ] ; then
+	   echo "If you have forgotten your password, run this script again
+	         with 'new-details' and you can add your information again";
+	   attempts=1
+	   sleep 3
+	fi
 	DecryptMe
   fi	
 }
@@ -60,18 +70,21 @@ EncryptMe() {
   echo "The program will now prompt you for a Password to protect your details."
   echo "Remember this, otherwise you will have to re-enter your BT credentials!"
   echo ""
-  openssl des3 -salt -in ..userdata.dat -out userdata.crypt >/dev/null 2>&1
+  openssl des3 -salt -in .userdata.dat -out .userdata.crypt >/dev/null 2>&1
   EncryptCheck
   rm -f .userdata.dat
   ConfigCheck
 }
 
 DecryptMe() {
+  # NTS: '$1' == password from second argument. 
+  sleep 2
   while [ -z "$BTUsername" ]; do    #Whilst the script doesn't know your details...
     clear
     echo "The program will now ask for your password to unlock your details."
     echo ""
-    openssl des3 -d -salt -in userdata.crypt -out ..userdata.dat 2>/dev/null
+    # Insert pasword here...
+    openssl des3 -d -salt -in .userdata.crypt -out .userdata.dat 2>/dev/null
     DecryptCheck
     . ./.userdata.dat               #Read the settings file
     username=$BTUsername            #Put the settings
@@ -97,7 +110,7 @@ ConfigureMe() {
 
 ConfigCheck(){
   clear
-  if [ -f userdata.crypt ] ; then   #If there's an encrypted file,
+  if [ -f .userdata.crypt ] ; then   #If there's an encrypted file,
     DecryptMe
   elif [ -f .userdata.dat ] ; then  #If there's a decrypted file,
     EncryptMe
@@ -107,10 +120,24 @@ ConfigCheck(){
   fi
 }
 
-ConfigCheck
-clear
+if [ $# -eq 0 ] ; then
+  ConfigCheck
+  clear
+  # Our connectivity Loop
+  while [ 1 ]; do
+    ConnectifyMe
+  done
+elif [ $1 == "new-details" ] ; then
+  echo "Deleting old entries..."
+  sleep 2
+  rm .userdata.crypt
+  ConfigCheck
+elif [ $1 == "pass" ] ; then
+  DecryptMe $2
+elif [ $1 == "help" ] ; then
+  echo "new-details     - deletes existing data, allows you to start again"
+  echo "pass [password] - enter password as option, useful when running this script at boot"
+  echo "help            - display this"
+fi
 
-# Our connectivity Loop
-while [ 1 ]; do
-  ConnectifyMe
-done
+
