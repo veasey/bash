@@ -83,8 +83,11 @@ DecryptMe() {
     clear
     echo "The program will now ask for your password to unlock your details."
     echo ""
-    # Insert pasword here...
-    openssl des3 -d -salt -in .userdata.crypt -out .userdata.dat 2>/dev/null
+    if [ $# -eq 0 ] ; then
+      openssl des3 -d -salt -in .userdata.crypt -out .userdata.dat 2>/dev/null
+    else
+      openssl des3 -d -salt -in .userdata.crypt -out .userdata.dat -pass pass:$1 2>/dev/null
+    fi
     DecryptCheck
     . ./.userdata.dat               #Read the settings file
     username=$BTUsername            #Put the settings
@@ -138,6 +141,7 @@ elif [ $1 == "new-details" ] ; then
   main
 elif [ $1 == "pass" ] ; then
   DecryptMe $2
+  main
 elif [ $1 == "help" ] ; then
   echo "new-details     - deletes existing data, allows you to start again"
   echo "pass [password] - enter password as option, useful when running this script at boot"
