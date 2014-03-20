@@ -30,7 +30,7 @@ ConnectifyMe() {
         # nmcli dev disconnect iface wlan0
 
 		echo "Connecting to Access Point"
-		#nmcli dev wifi connect $essid
+        #nmcli dev wifi connect $essid
 		nmcli dev wifi connect $essid iface wlan1
 	fi
   else
@@ -120,18 +120,22 @@ ConfigCheck(){
   fi
 }
 
-if [ $# -eq 0 ] ; then
+main() {
   ConfigCheck
   clear
   # Our connectivity Loop
   while [ 1 ]; do
     ConnectifyMe
   done
+}
+
+if [ $# -eq 0 ] ; then
+  main
 elif [ $1 == "new-details" ] ; then
   echo "Deleting old entries..."
   sleep 2
   rm .userdata.crypt
-  ConfigCheck
+  main
 elif [ $1 == "pass" ] ; then
   DecryptMe $2
 elif [ $1 == "help" ] ; then
