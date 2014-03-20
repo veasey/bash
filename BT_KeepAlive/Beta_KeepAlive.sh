@@ -1,18 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
 #Dependency Check
-#sudo apt-get --yes --force-yes install curl > /dev/null
-#sudo apt-get --yes --force-yes install nmcli > /dev/null
+sudo apt-get --yes --force-yes install curl > /dev/null
+sudo apt-get --yes --force-yes install openssl > /dev/null
 
+# Other Variables
 ip=173.194.34.132 # google.com
-username=username%40btinternet.com
-password=password1234
 essid=BTOpenzone
 
-# Our connectivity Loop
-while [ 1 ]; do
+#All of the individual functions are up here!
 
-  # Ping is 3 packets, Grep looks for total failure. This is to give BT some leeway for having shitty ping.
+#<-------------------------------FUNCTIONS---------------------------------------->#
+
+ConnectifyMe(){
+
+ # Ping is 3 packets, Grep looks for total failure. This is to give BT some leeway for having shitty ping.
   if ping -c 3 $ip | grep '100% packet loss\|Network is unreachable'
   then
      
@@ -38,7 +40,7 @@ while [ 1 ]; do
 
 		echo "Connecting to Access Point"
 		#nmcli dev wifi connect $essid
-		nmcli dev wifi connect $essid iface wlan2
+		nmcli dev wifi connect $essid iface wlan1
 
 	fi
 
@@ -46,4 +48,108 @@ while [ 1 ]; do
     echo "$(date "+%Y-%m-%d %H:%M:%S:") Online"
     sleep 3
   fi
+}
+
+#<-------------------------------------------------------------------------------->#
+DecryptCheck() {
+
+if [ $? -ne 0 ] ; then
+rm -f userdata.dat
+  echo "Incorrect Password! Please try again!"
+sleep 3
+
+DecryptMe
+fi
+}
+#<-------------------------------------------------------------------------------->#
+EncryptCheck() {
+
+if [ $? -ne 0 ] ; then
+
+  echo "Encryption Failed! Please try again!"
+sleep 3
+
+EncryptMe
+fi
+}
+#<-------------------------------------------------------------------------------->#
+EncryptMe(){
+clear
+echo "The program will now prompt you for a Password to protect your details."
+echo "Remember this, otherwise you will have to re-enter your BT credentials!"
+echo ""
+openssl des3 -salt -in userdata.dat -out userdata.crypt >/dev/null 2>&1
+EncryptCheck
+rm -f userdata.dat
+ConfigCheck
+}
+#<-------------------------------------------------------------------------------->#
+DecryptMe(){
+while [ -z "$BTUsername" ]; do #Whilst the script doesn't know your details...
+clear
+echo "The program will now ask for your password to unlock your details."
+echo ""
+openssl des3 -d -salt -in userdata.crypt -out userdata.dat 2>/dev/null
+DecryptCheck
+
+
+
+. ./userdata.dat #Read the settings file
+username=$BTUsername #Put the settings
+password=$BTPassword #In the scripts memory
+rm -f userdata.dat
 done
+}
+#<-------------------------------------------------------------------------------->#
+ConfigureMe(){
+echo "There is no configuration file present. Obtaining necessary data now."
+ 
+echo "Please enter the username used to log in to OpenZone."
+read -p "(Replace the email address @ with %40): " NewUsername
+clear
+read -sp "Please enter the password used to log in to OpenZone: " NewPassword
+echo ""
+echo "BTUsername="$NewUsername >> userdata.dat
+echo "BTPassword="$NewPassword >> userdata.dat
+. ./userdata.dat
+username=$BTUsername
+password=$BTPassword
+echo ""
+}
+#<-------------------------------------------------------------------------------->#
+ConfigCheck(){
+clear
+if [ -f userdata.crypt ] #If there's an encrypted file,
+then
+
+DecryptMe
+
+elif [ -f userdata.dat ] #If there's a decrypted file,
+then
+
+EncryptMe
+
+
+
+else
+
+ConfigureMe
+
+ConfigCheck
+fi
+}
+#<-------------------------------------------------------------------------------->#
+
+
+ConfigCheck
+clear
+
+# Our connectivity Loop
+while [ 1 ]; do
+ConnectifyMe
+done
+
+
+
+#<-------------------------------------------------------------------------------->#
+
