@@ -1,16 +1,17 @@
 #!/bin/bash
 
 #Dependency Check
-sudo apt-get --yes --force-yes install curl > /dev/null
-sudo apt-get --yes --force-yes install openssl > /dev/null
+#These will force installation of curl and openssl if not already installed. Currently only works for apt-based package managers.
+dpkg -s curl 2>/dev/null >/dev/null || sudo apt-get --yes --force-yes install curl > /dev/null
+dpkg -s openssl 2>/dev/null >/dev/null || sudo apt-get --yes --force-yes install openssl > /dev/null
 
-ip=google.com                  # google.com
+internet=google.com                  # The domain labelled here will be polled to find out if we have connectivity. Adjust to your preference.
 essid=BTOpenzone
 attempts=1
 
 ConnectifyMe() {
   # 3 Pings, push POST request if 100% loss of connectivity.	
-  if ping -c 3 $ip | grep '100% packet loss\|Network is unreachable' ; then    
+  if ping -c 3 $internet | grep '100% packet loss\|Network is unreachable' ; then    
 	echo "$(date "+%Y-%m-%d %H:%M:%S:") Connection down"
     if iwconfig | grep "BTOpenzone" ; then 
 	  curl 'https://www.btopenzone.com:8443/ante' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-gb,en;q=0.5' -H 'Connection: keep-alive' -H 'Cookie: JSESSIONID=716ri2hfsar64; __utma=171794931.404001753.1385254451.1385254451.1385254451.1; __utmb=171794931.3.10.1385254451; __utmc=171794931; __utmz=171794931.1385254451.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); s_cc=true; s_sq=%5B%5BB%5D%5D' -H 'Host: www.btopenzone.com:8443' -H 'Referer: https://www.btopenzone.com:8443/wpb' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:25.0) Gecko/20100101 Firefox/25.0' -H 'Content-Type: application/x-www-form-urlencoded' --data "username=$username&password=$password&x=0&y=0&xhtmlLogon=https%3A%2F%2Fwww.btopenzone.com%3A8443%2Fante" > /dev/null
@@ -143,9 +144,9 @@ elif [ $1 == "pass" ] ; then
   DecryptMe $2
   main
 elif [ $1 == "help" ] ; then
-  echo "new-details     - deletes existing data, allows you to start again"
-  echo "pass [password] - enter password as option, useful when running this script at boot"
-  echo "help            - display this"
+  echo "new-details     - Deletes existing data and prompts you to re-enter your details."
+  echo "pass [password] - Enter the encryption password as an option. This is useful when running this script on startup or as a daemon."
+  echo "help            - Displays this help prompt."
 fi
 
 
