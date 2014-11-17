@@ -4,7 +4,7 @@
 sudo apt-get --yes --force-yes install curl > /dev/null
 sudo apt-get --yes --force-yes install openssl > /dev/null
 
-ip=173.194.34.132                   # google.com
+ip=google.com                  # google.com
 essid=BTOpenzone
 attempts=1
 
