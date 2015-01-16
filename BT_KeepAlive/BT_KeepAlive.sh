@@ -13,7 +13,8 @@ ConnectifyMe() {
 #Checks to make sure you are actually connected to a BT Openzone Access Point.
     if iwgetid -r | grep "BTOpenzone" 2>/dev/null >/dev/null ; then  
  # 3 Pings, push POST request if 100% loss of connectivity.	
-if ping -c 3 $internet 2>/dev/null >/dev/null | grep '100% packet loss\|Network is unreachable' ; then 
+ping -c 3 $internet 2>/dev/null >/dev/null 
+if [ $? -ne 0 ] ; then 
 echo "$(date "+%Y-%m-%d %H:%M:%S:") Connection down"
  SendLoginPOST
 else
