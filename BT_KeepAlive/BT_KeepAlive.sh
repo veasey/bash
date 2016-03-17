@@ -98,8 +98,8 @@ DecryptMe() {
 
 ConfigureMe() {
   echo "There is no configuration file present. Obtaining necessary data now."
-  echo "Please enter the username used to log in to OpenZone."
-  read -p "(Replace the email address @ with %40): " NewUsername
+  read -p "Please enter the email address used to log in to OpenZone: " NewUsername
+  NewUsername=$(sed 's/@/%40/'<<< $NewUsername)
   clear
   read -sp "Please enter the password used to log in to OpenZone: " NewPassword
   echo ""
