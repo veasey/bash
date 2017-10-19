@@ -1,8 +1,9 @@
 #!/bin/bash
 
-#Dependency Check
-sudo apt-get --yes --force-yes install curl > /dev/null
-sudo apt-get --yes --force-yes install openssl > /dev/null
+#Identifies OS
+YUM_CMD=$(command -v yum)
+APT_GET_CMD=$(command -v apt-get)
+#OTHER_CMD=$(command -v <other installer>)
 
 # Other Variables
 ip=173.194.34.132 # google.com
@@ -139,6 +140,34 @@ ConfigCheck
 fi
 }
 #<-------------------------------------------------------------------------------->#
+#Package Installer
+dep-install(){
+ PACKAGE=$1
+ if [[ ! -z $YUM_CMD ]]; then
+    sudo yum -y install $PACKAGE > /dev/null
+ elif [[ ! -z $APT_GET_CMD ]]; then
+    sudo apt-get --yes --force-yes install curl $PACKAGE > /dev/null
+# elif [[ ! -z $OTHER_CMD ]]; then
+#    $OTHER_CMD <proper arguments>
+ else
+    echo "error: Do not know how to install $PACKAGE"
+    exit 1;
+ fi
+}
+#<-------------------------------------------------------------------------------->#
+#Dependency Check
+dependson(){
+if [hash $program 2>/dev/null]; then
+        :
+    else
+        dep-install $1
+    fi
+}
+#<-------------------------------------------------------------------------------->#
+
+#All dependencies are installed here
+dependson curl
+dependson openssl
 
 
 ConfigCheck
