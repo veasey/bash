@@ -1,4 +1,7 @@
 #begin!
+dpkg -s cowsay 2>/dev/null >/dev/null || sudo apt-get --yes --force-yes install cowsay > /dev/null
+dpkg -s macchanger 2>/dev/null >/dev/null || sudo apt-get --yes --force-yes install macchanger > /dev/null
+dpkg -s network-manager 2>/dev/null >/dev/null || sudo apt-get --yes --force-yes install network-manager > /dev/null
 
 interface=$1
 newhostname=$RANDOM
@@ -9,7 +12,7 @@ if [ $# -eq 0 ]
     read -p "Please enter the interface: " interface
 fi
 
-sudo apt-get --yes --force-yes install cowsay macchanger network-manager > /dev/null
+
 
 cowsay R@ndom-a-miz!ng y3r shaniz-b1ts
 
