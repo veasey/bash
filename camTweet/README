@@ -1,0 +1,6 @@
+camTweet
+--------
+
+Not a BASH script, but still a handy hack ran from the terminal. This script I use in conjunction with "Motion" - from the Ubuntu repository - so is ran whenever my security webcam detects movement.
+
+I put it here so I can't lose it, and to save my mates from reinventing the wheel.
